@@ -1,0 +1,19 @@
+# DocVault Configuration File
+# Place this file at:
+#   - ./config.yaml (project root)
+#   - ./configs/config.yaml (configs directory)
+#   - /etc/docvault/config.yaml (system-wide)
+#
+# Environment variables override config file settings with DOCVAULT_ prefix
+# Example: DOCVAULT_SERVER_PORT=8089
+
+server:
+  host: ""          # Server host, empty means all interfaces
+  port: 8080         # Server port
+
+storage:
+  root_dir: ./data/md  # Directory for storing markdown files
+
+api:
+  base_path: /api     # API base path
+  version: 1.0.0      # API version

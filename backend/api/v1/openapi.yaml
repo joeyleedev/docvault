@@ -1,0 +1,282 @@
+openapi: 3.0.3
+info:
+  title: DocVault API
+  description: |
+    DocVault is a self-hosted cloud document management system that provides simple, lightweight personal document management.
+
+    ## Features
+    - Create, read, update, and delete markdown documents
+    - List all documents with metadata
+    - Path security with traversal protection
+    - Single-user system with no database required
+
+  version: 1.0.0
+  contact:
+    name: DocVault
+    email: support@docvault.local
+  license:
+    name: MIT
+
+servers:
+  - url: http://localhost:8080/api
+    description: Local development server
+  - url: http://localhost:8080/api/v1
+    description: Local development server (versioned)
+
+tags:
+  - name: documents
+    description: Document management operations
+
+paths:
+  /docs:
+    get:
+      operationId: listDocuments
+      summary: List all documents
+      description: Retrieve a list of all documents with their metadata
+      tags:
+        - documents
+      responses:
+        '200':
+          description: Successfully retrieved document list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DocumentMeta'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    post:
+      operationId: createDocument
+      summary: Create a new document
+      description: Create a new markdown document with the specified name
+      tags:
+        - documents
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateDocumentRequest'
+            examples:
+              helloWorld:
+                summary: Hello World Document
+                value:
+                  name: hello-world
+                  content: "# Hello World\n\nThis is my first document."
+              emptyDoc:
+                summary: Empty Document
+                value:
+                  name: empty-doc
+                  content: ""
+      responses:
+        '201':
+          description: Document created successfully
+          headers:
+            Location:
+              description: URI of the created document
+              schema:
+                type: string
+              example: /api/docs/hello-world
+        '400':
+          description: Bad request - invalid input or document already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                invalidName:
+                  summary: Invalid document name
+                  value:
+                    error: "invalid file name"
+                alreadyExists:
+                  summary: Document already exists
+                  value:
+                    error: "file already exists"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /docs/{name}:
+    parameters:
+      - name: name
+        in: path
+        required: true
+        description: Document name (without .md extension)
+        schema:
+          type: string
+        example: hello-world
+    get:
+      operationId: getDocument
+      summary: Get a document
+      description: Retrieve the content and metadata of a specific document
+      tags:
+        - documents
+      responses:
+        '200':
+          description: Successfully retrieved document
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Document'
+              examples:
+                helloWorld:
+                  summary: Hello World Document
+                  value:
+                    name: hello-world
+                    content: "# Hello World\n\nThis is my first document."
+        '404':
+          description: Document not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: "file not found"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    put:
+      operationId: updateDocument
+      summary: Update a document
+      description: Update the content of an existing document
+      tags:
+        - documents
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateDocumentRequest'
+            examples:
+              updateContent:
+                summary: Update with new content
+                value:
+                  content: "# Updated Content\n\nThis document has been updated."
+      responses:
+        '204':
+          description: Document updated successfully
+        '400':
+          description: Bad request - invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      operationId: deleteDocument
+      summary: Delete a document
+      description: Delete a specific document
+      tags:
+        - documents
+      responses:
+        '204':
+          description: Document deleted successfully
+        '404':
+          description: Document not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+components:
+  schemas:
+    CreateDocumentRequest:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+          description: Document name (without .md extension)
+          pattern: '^[^./]+(?:/[^./]+)*$'
+          minLength: 1
+          maxLength: 255
+          example: my-document
+        content:
+          type: string
+          description: Document content in markdown format
+          default: ""
+          example: "# My Document\n\nThis is the content."
+
+    UpdateDocumentRequest:
+      type: object
+      required:
+        - content
+      properties:
+        content:
+          type: string
+          description: Updated document content in markdown format
+          example: "# Updated Content\n\nNew content here."
+
+    Document:
+      type: object
+      required:
+        - name
+        - content
+      properties:
+        name:
+          type: string
+          description: Document name
+          example: hello-world
+        content:
+          type: string
+          description: Document content
+          example: "# Hello World\n\nThis is my first document."
+
+    DocumentMeta:
+      type: object
+      required:
+        - name
+        - updatedAt
+      properties:
+        name:
+          type: string
+          description: Document name (with .md extension)
+          example: hello-world.md
+        updatedAt:
+          type: string
+          format: date-time
+          description: Last modification timestamp
+          example: "2024-01-15T10:30:00Z"
+
+    Error:
+      type: object
+      required:
+        - error
+      properties:
+        error:
+          type: string
+          description: Error message describing what went wrong
+          example: "file not found"
+
+  examples:
+    documentList:
+      value:
+        - name: hello-world.md
+          updatedAt: "2024-01-15T10:30:00Z"
+        - name: getting-started.md
+          updatedAt: "2024-01-14T15:20:00Z"
+        - name: api-reference.md
+          updatedAt: "2024-01-13T09:45:00Z"
