@@ -8,12 +8,18 @@
 # Example: DOCVAULT_SERVER_PORT=8089
 
 server:
-  host: ""          # Server host, empty means all interfaces
-  port: 8080         # Server port
+  host: '' # Server host, empty means all interfaces
+  port: 8088 # Server port
 
 storage:
-  root_dir: ./data/md  # Directory for storing markdown files
+  root_dir: ./data/md # Directory for storing markdown files
 
 api:
-  base_path: /api     # API base path
-  version: 1.0.0      # API version
+  base_path: /api # API base path
+  version: 1.0.0 # API version
+
+log:
+  level: info # Log level: debug, info, warn, error
+  format: text # Log format: json, text
+  output: stdout # Output destination: stdout, stderr, or file path
+  add_source: false # Add source code position to logs

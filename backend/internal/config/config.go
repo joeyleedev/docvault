@@ -13,6 +13,7 @@ type Config struct {
 	Server  ServerConfig  `mapstructure:"server"`
 	Storage StorageConfig `mapstructure:"storage"`
 	API     APIConfig     `mapstructure:"api"`
+	Log     LogConfig     `mapstructure:"log"`
 }
 
 // ServerConfig holds HTTP server configuration
@@ -32,6 +33,14 @@ type APIConfig struct {
 	Version  string `mapstructure:"version"`
 }
 
+// LogConfig holds logging configuration
+type LogConfig struct {
+	Level     string `mapstructure:"level"`
+	Format    string `mapstructure:"format"`
+	Output    string `mapstructure:"output"`
+	AddSource bool   `mapstructure:"add_source"`
+}
+
 var cfg *Config
 
 // Load reads configuration from file and environment variables
@@ -40,10 +49,14 @@ func Load(configPath string) (*Config, error) {
 
 	// Set defaults
 	v.SetDefault("server.host", "")
-	v.SetDefault("server.port", 8080)
+	v.SetDefault("server.port", 8088)
 	v.SetDefault("storage.root_dir", "./data/md")
 	v.SetDefault("api.base_path", "/api")
 	v.SetDefault("api.version", "1.0.0")
+	v.SetDefault("log.level", "info")
+	v.SetDefault("log.format", "text")
+	v.SetDefault("log.output", "stdout")
+	v.SetDefault("log.add_source", false)
 
 	// Read config file if provided
 	if configPath != "" {

@@ -1,13 +1,15 @@
 package middleware
 
 import (
-	"log"
+	"log/slog"
 	"time"
 
 	"github.com/gin-gonic/gin"
+
+	"docvault-backend/internal/logger"
 )
 
-// Logger logs HTTP requests
+// Logger logs HTTP requests using structured logging
 func Logger() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		start := time.Now()
@@ -20,14 +22,26 @@ func Logger() gin.HandlerFunc {
 		status := c.Writer.Status()
 		method := c.Request.Method
 		requestID := GetRequestID(c)
+		clientIP := c.ClientIP()
+		userAgent := c.Request.UserAgent()
 
-		log.Printf("[%s] %s %s %s %d %v",
-			requestID,
-			method,
-			path,
-			query,
-			status,
-			latency,
+		// Determine log level based on status code
+		level := slog.LevelInfo
+		if status >= 400 && status < 500 {
+			level = slog.LevelWarn
+		} else if status >= 500 {
+			level = slog.LevelError
+		}
+
+		logger.Get().Log(c.Request.Context(), level, "HTTP request",
+			slog.String("request_id", requestID),
+			slog.String("method", method),
+			slog.String("path", path),
+			slog.String("query", query),
+			slog.Int("status", status),
+			slog.Duration("latency", latency),
+			slog.String("ip", clientIP),
+			slog.String("user_agent", userAgent),
 		)
 	}
 }

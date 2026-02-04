@@ -1,7 +1,6 @@
 package main
 
 import (
-	"log"
 	"os"
 	"os/signal"
 	"syscall"
@@ -11,6 +10,7 @@ import (
 	"docvault-backend/internal/api/handler"
 	"docvault-backend/internal/config"
 	"docvault-backend/internal/fs"
+	"docvault-backend/internal/logger"
 	"docvault-backend/internal/middleware"
 	"docvault-backend/internal/service"
 )
@@ -19,8 +19,27 @@ func main() {
 	// Load configuration
 	cfg, err := config.Load("")
 	if err != nil {
-		log.Fatalf("Failed to load config: %v", err)
+		logger.Error("Failed to load config", "error", err)
+		os.Exit(1)
 	}
+
+	// Initialize logger
+	logCfg := logger.Config{
+		Level:     cfg.Log.Level,
+		Format:    cfg.Log.Format,
+		Output:    cfg.Log.Output,
+		AddSource: cfg.Log.AddSource,
+	}
+	if err := logger.Init(logCfg); err != nil {
+		logger.Error("Failed to initialize logger", "error", err)
+		os.Exit(1)
+	}
+
+	logger.Info("Starting DocVault API",
+		"address", cfg.GetAddress(),
+		"storage", cfg.Storage.RootDir,
+		"log_level", cfg.Log.Level,
+	)
 
 	// Set Gin mode
 	if os.Getenv("GIN_MODE") == "release" {
@@ -29,7 +48,8 @@ func main() {
 
 	// Ensure storage directory exists
 	if err := os.MkdirAll(cfg.Storage.RootDir, 0755); err != nil {
-		log.Fatalf("Failed to create storage directory: %v", err)
+		logger.Error("Failed to create storage directory", "error", err)
+		os.Exit(1)
 	}
 
 	// Initialize layers
@@ -38,7 +58,7 @@ func main() {
 	docHandler := handler.New(docSvc)
 
 	// Setup router
-	r := gin.Default()
+	r := gin.New() // Use gin.New() to avoid default logger middleware
 
 	// Add middleware
 	r.Use(middleware.CORS())
@@ -66,14 +86,16 @@ func main() {
 
 	// Start server
 	addr := cfg.GetAddress()
-	log.Printf("Starting DocVault API on %s", addr)
-	log.Printf("Storage directory: %s", cfg.Storage.RootDir)
-	log.Printf("OpenAPI spec: http://%s/openapi.yaml", addr)
+	logger.Info("Server listening",
+		"address", addr,
+		"openapi", "http://"+addr+"/openapi.yaml",
+	)
 
 	// Graceful shutdown
 	go func() {
 		if err := r.Run(addr); err != nil {
-			log.Fatalf("Server failed: %v", err)
+			logger.Error("Server failed", "error", err)
+			os.Exit(1)
 		}
 	}()
 
@@ -82,5 +104,5 @@ func main() {
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	<-quit
 
-	log.Println("Shutting down server...")
+	logger.Info("Shutting down server...")
 }

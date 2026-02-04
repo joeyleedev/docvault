@@ -1,0 +1,195 @@
+.container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.editor {
+  flex: 1;
+  padding: 3rem 4rem;
+  outline: none;
+  overflow-y: auto;
+  font-size: 1rem;
+  line-height: 1.7;
+  max-width: 900px;
+  margin: 0 auto;
+  transition: opacity 150ms ease-out;
+}
+
+.editor:empty::before {
+  opacity: 0.5;
+}
+
+/* Typora-like headings with hover animation */
+.editor h1 {
+  font-size: 2.25rem;
+  font-weight: 700;
+  margin: 2rem 0 1rem;
+  line-height: 1.2;
+  padding-bottom: 0.3rem;
+  border-bottom: 1px solid hsl(var(--border));
+  transition: color 150ms ease-out;
+}
+
+.editor h1:hover {
+  color: hsl(var(--accent-foreground));
+}
+
+.editor h2 {
+  font-size: 1.75rem;
+  font-weight: 600;
+  margin: 1.5rem 0 0.75rem;
+  transition: color 150ms ease-out;
+}
+
+.editor h2:hover {
+  color: hsl(var(--accent-foreground));
+}
+
+.editor h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin: 1rem 0 0.5rem;
+  transition: color 150ms ease-out;
+}
+
+.editor h3:hover {
+  color: hsl(var(--accent-foreground));
+}
+
+/* Paragraphs */
+.editor p {
+  margin: 0.75rem 0;
+}
+
+.editor p:first-child {
+  margin-top: 0;
+}
+
+.editor p:last-child {
+  margin-bottom: 0;
+}
+
+/* Lists */
+.editor ul,
+.editor ol {
+  padding-left: 1.5rem;
+  margin: 0.75rem 0;
+}
+
+.editor li {
+  margin: 0.25rem 0;
+  transition: transform 100ms ease-out;
+}
+
+.editor li:hover {
+  transform: translateX(4px);
+}
+
+.editor li p {
+  margin: 0.25rem 0;
+}
+
+/* Code with hover effect */
+.editor code {
+  background: hsl(var(--muted));
+  padding: 0.2rem 0.4rem;
+  border-radius: 0.25rem;
+  font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+  font-size: 0.875em;
+  transition: background-color 150ms ease-out;
+}
+
+.editor code:hover {
+  background-color: hsl(var(--accent));
+}
+
+.editor pre {
+  background: hsl(var(--muted));
+  padding: 1rem;
+  border-radius: 0.5rem;
+  overflow-x: auto;
+  margin: 1rem 0;
+  transition: box-shadow 150ms ease-out;
+}
+
+.editor pre:hover {
+  box-shadow: 0 4px 12px hsl(var(--muted) / 0.5);
+}
+
+.editor pre code {
+  background: transparent;
+  padding: 0;
+  font-size: 0.875rem;
+}
+
+.editor pre code:hover {
+  transform: none;
+  background: transparent;
+}
+
+/* Blockquotes with hover animation */
+.editor blockquote {
+  border-left: 4px solid hsl(var(--primary));
+  padding-left: 1rem;
+  margin: 1rem 0;
+  font-style: italic;
+  color: hsl(var(--muted-foreground));
+  transition: transform 150ms ease-out, box-shadow 150ms ease-out;
+}
+
+.editor blockquote:hover {
+  transform: translateX(4px);
+  box-shadow: 0 2px 8px hsl(var(--border) / 0.3);
+}
+
+.editor blockquote p {
+  margin: 0.5rem 0;
+}
+
+/* Strong */
+.editor strong {
+  font-weight: 600;
+}
+
+/* Emphasis */
+.editor em {
+  font-style: italic;
+}
+
+/* Links with animation */
+.editor a {
+  color: hsl(var(--primary));
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  transition: color 150ms ease-out, text-decoration-color 150ms ease-out, transform 100ms ease-out;
+  display: inline-block;
+}
+
+.editor a:hover {
+  color: hsl(var(--primary) / 0.8);
+  text-decoration-color: transparent;
+  transform: translateY(-1px);
+}
+
+/* Placeholder */
+.editor .is-editor-empty:first-child::before {
+  color: hsl(var(--muted-foreground));
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  pointer-events: none;
+}
+
+/* Focus outline */
+.editor :focus {
+  outline: none;
+}
+
+/* Selection with animation */
+.ProseMirror-selectednode {
+  outline: 3px solid hsl(var(--ring));
+  outline-offset: 2px;
+  transition: outline-color 150ms ease-out;
+}
